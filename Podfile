@@ -3,4 +3,5 @@ use_frameworks!
 
 target 'taskapp' do
   pod 'RealmSwift', '3.0.1'
+  pod 'SVProgressHUD'
 end

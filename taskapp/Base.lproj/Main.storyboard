@@ -197,7 +197,7 @@
         <scene sceneID="8WA-Gd-K49">
             <objects>
                 <viewController id="oph-Vk-J1L" customClass="CategoryViewController" customModule="taskapp" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="B6v-5v-PUx" customClass="CategoryViewController">
+                    <view key="view" contentMode="scaleToFill" id="B6v-5v-PUx">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -211,7 +211,7 @@
                                 <rect key="frame" x="156.5" y="124" width="62" height="30"/>
                                 <state key="normal" title="登録する"/>
                                 <connections>
-                                    <action selector="categoryAddButton:" destination="B6v-5v-PUx" eventType="touchUpInside" id="79W-Jg-4x9"/>
+                                    <action selector="categoryAddButton:" destination="oph-Vk-J1L" eventType="touchUpInside" id="KMq-W2-Mpp"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -224,11 +224,11 @@
                             <constraint firstItem="aSa-Xh-yF5" firstAttribute="centerX" secondItem="B6v-5v-PUx" secondAttribute="centerX" id="SmR-Hx-QIF"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="sJx-Q4-GPL"/>
-                        <connections>
-                            <outlet property="categoryTextField" destination="M9b-Dj-gUn" id="bdk-Mg-cj9"/>
-                        </connections>
                     </view>
                     <navigationItem key="navigationItem" title="カテゴリを追加" id="cu2-q9-p00"/>
+                    <connections>
+                        <outlet property="categoryTextField" destination="M9b-Dj-gUn" id="eFo-nl-KCJ"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="p2v-K1-MzP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
