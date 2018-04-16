@@ -72,6 +72,7 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        print("DEBUG:\(task.category!.id)")
         return categoryList[task.category!.id].name
     }
     

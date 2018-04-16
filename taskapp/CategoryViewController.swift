@@ -12,7 +12,7 @@ import SVProgressHUD
 
 class CategoryViewController: UIViewController {
 
-    var category:Category!
+    let category = Category()
     let realm = try! Realm()
     @IBOutlet weak var categoryTextField: UITextField!
     
@@ -37,6 +37,7 @@ class CategoryViewController: UIViewController {
             SVProgressHUD.showError(withStatus: "そのカテゴリ名はすでに入力されています。")
         } else {
             try! realm.write {
+                
                 print("DEBUG: \(categoryTextField.text!)")
                 self.category.name = categoryTextField.text!
                 self.realm.add(self.category, update: true)
