@@ -30,9 +30,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        tableView.delegate = self
-        tableView.dataSource = self
-        setupNavBar()
+        setup()
     }
 
     override func didReceiveMemoryWarning() {
@@ -149,7 +147,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.reloadData()
     }
     
-    func setupNavBar() {
+    func setup() {
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
@@ -162,5 +160,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             tableView.tableHeaderView = searchController.searchBar
             print("DEBUG: iOS < 11.0")
         }
+        
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 }
