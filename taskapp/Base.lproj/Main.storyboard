@@ -66,6 +66,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="navItem" destination="pc3-VA-d1K" id="HgX-Je-eVZ"/>
                         <outlet property="tableView" destination="6Xg-UM-szD" id="Cig-Vd-w5H"/>
                         <segue destination="jg3-Sv-B8d" kind="show" identifier="cellSegue" id="pqI-na-uGI"/>
                     </connections>

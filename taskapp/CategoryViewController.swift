@@ -37,10 +37,10 @@ class CategoryViewController: UIViewController {
             SVProgressHUD.showError(withStatus: "そのカテゴリ名はすでに入力されています。")
         } else {
             try! realm.write {
-                
-                print("DEBUG: \(categoryTextField.text!)")
+                self.category.id = Category.assignID()
                 self.category.name = categoryTextField.text!
                 self.realm.add(self.category, update: true)
+                print("DEBUG: " + String(category.id) + ":" + categoryTextField.text!)
                 
                 SVProgressHUD.showSuccess(withStatus: "カテゴリ名を入力しました。")
             }

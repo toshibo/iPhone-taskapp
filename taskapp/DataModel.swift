@@ -16,7 +16,7 @@ class Task: Object {
     @objc dynamic var title = ""
     
     //カテゴリ
-    @objc dynamic var category: Category?
+    @objc dynamic var category: Category? = Category()
     
     //内容
     @objc dynamic var contents = ""
@@ -43,5 +43,16 @@ class Category: Object {
     //IDをプライマリーキーとして設定
     override static func primaryKey() -> String? {
         return "id"
+    }
+    
+    //IDをアサイン（オートインクリメント）
+    static func assignID() -> Int {
+        let realm = try! Realm()
+        let categoryList = realm.objects(Category.self)
+        if categoryList.count != 0 {
+            return categoryList.max(ofProperty: "id")! + 1
+        } else {
+            return 0
+        }
     }
 }

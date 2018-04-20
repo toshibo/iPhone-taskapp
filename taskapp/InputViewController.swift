@@ -18,6 +18,7 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     @IBOutlet weak var datePicker: UIDatePicker!
     
     var task: Task!
+    var category: Category!
     var categoryList = try! Realm().objects(Category.self)
     let realm = try! Realm()
     
@@ -28,21 +29,26 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
         let tapGesture:UITapGestureRecognizer = UITapGestureRecognizer(target:self, action:#selector(dismissKeyboard))
         self.view.addGestureRecognizer(tapGesture)
         
+        //もしカテゴリ値が設定されていたらそれを初期値としてセット
+        if task.category?.id != nil {
+            categoryPicker.selectRow(task.category!.id, inComponent: 0, animated: true)
+        }
+        
+        titleTextField.text = task.title
+        contentsTextView.text = task.contents
+        datePicker.date = task.date
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         //UIPickerViewの設定
         categoryPicker.dataSource = self
         categoryPicker.delegate = self
-        
-        titleTextField.text = task.title
-        //categoryPicker.text = task.category
-        
-        contentsTextView.text = task.contents
-        datePicker.date = task.date
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         try! realm.write {
             self.task.title = self.titleTextField.text!
-            //self.task.category = self.categoryTextField.text!
+            self.task.category = self.categoryList[categoryPicker.selectedRow(inComponent: 0)]
             self.task.contents = self.contentsTextView.text
             self.task.date = self.datePicker.date
             self.realm.add(self.task, update: true)
@@ -72,8 +78,8 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        print("DEBUG:\(task.category!.id)")
-        return categoryList[task.category!.id].name
+        print("DEBUG:\(categoryList[row])")
+        return categoryList[row].name
     }
     
     func setNotification(task: Task) {

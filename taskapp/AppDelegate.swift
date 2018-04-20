@@ -8,12 +8,13 @@
 
 import UIKit
 import UserNotifications
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
-
+    let realm = try! Realm()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -24,6 +25,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             // Enable or disable features based on authorization
         }
         center.delegate = self
+        
+        // RealmのCategoryデータが0であればデータの初期データを入力する
+        let categoryNameList = ["勉強","データ入力","事務作業","プログラミング","資料作成"]
+        if realm.objects(Category.self).count == 0 {
+            for categoryName in categoryNameList {
+                var cat = Category()
+                cat.id = Category.assignID()
+                cat.name = categoryName
+                print("DEBUG: "+String(cat.id)+cat.name)
+                try! realm.write() {
+                    self.realm.add(cat)
+                }
+            }
+            
+        }
         
         return true
     }

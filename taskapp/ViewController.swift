@@ -10,8 +10,13 @@ import UIKit
 import RealmSwift
 import UserNotifications
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating {
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var navItem: UINavigationItem!
+    
+    private var searchController: UISearchController!
+    
+    private var filteredTasks: Results<Task>!
     
     //Realmインスタンスを取得する
     let realm = try! Realm()
@@ -27,6 +32,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         tableView.delegate = self
         tableView.dataSource = self
+        setupNavBar()
     }
 
     override func didReceiveMemoryWarning() {
@@ -43,7 +49,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: UITableViewDataSourceプロトコルのメソッド
     // データの数(=セルの数)を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section:Int) -> Int {
-        return taskArray.count //追加する
+        if searchController.isActive {
+            return filteredTasks.count
+        } else { //
+            return taskArray.count
+        }
     }
     
     // 各セルの内容を返すメソッド
@@ -52,11 +62,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
         //Cellに値を設定する
-        let task = taskArray[indexPath.row]
-        if task.category?.name != nil {
-            cell.textLabel?.text = "\(task.title)[\(task.category?.name)]"
+        let task = searchController.isActive ? filteredTasks[indexPath.row] : taskArray[indexPath.row]
+        if task.category?.name != "" {
+            cell.textLabel?.text = "[\(task.category!.name)]\(task.title)"
         } else {
-            cell.textLabel?.text = "\(task.title)[カテゴリ未分類]"
+            cell.textLabel?.text = "[カテゴリ未分類]\(task.title)"
         }
         
         let formatter = DateFormatter()
@@ -84,7 +94,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if editingStyle == .delete {
             
             //削除されたタスクを取得する
-            let task = self.taskArray[indexPath.row]
+            let task = searchController.isActive ? filteredTasks[indexPath.row] : taskArray[indexPath.row]
             
             //ローカル通知をキャンセルする
             let center = UNUserNotificationCenter.current()
@@ -114,7 +124,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         if segue.identifier == "cellSegue" {
             let indexPath = self.tableView.indexPathForSelectedRow
-            inputViewController.task = taskArray[indexPath!.row]
+            inputViewController.task = searchController.isActive ? filteredTasks[indexPath!.row] : taskArray[indexPath!.row]
         } else {
             let task = Task()
             task.date = Date()
@@ -127,5 +137,30 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             inputViewController.task = task
         }
     }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        // searchbarに入力したテキストを使って表示データをフィルタリングする
+        let text = searchController.searchBar.text ?? ""
+        if text.isEmpty { //サーチバーが空文字の場合、
+            filteredTasks = taskArray
+        } else {
+            filteredTasks = taskArray.filter("category.name contains %@", text)
+        }
+        tableView.reloadData()
+    }
+    
+    func setupNavBar() {
+        searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        
+        if #available(iOS 11.0, *) {
+            // UISearchControllerをUINavigationItemのsearchControllerプロパティにセットする
+            navItem.searchController = searchController
+            print("DEBUG: iOS >= 11.0")
+        } else {
+            tableView.tableHeaderView = searchController.searchBar
+            print("DEBUG: iOS < 11.0")
+        }
+    }
 }
-
