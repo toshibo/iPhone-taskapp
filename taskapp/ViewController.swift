@@ -150,11 +150,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func setup() {
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
+        searchController.hidesNavigationBarDuringPresentation = false
         searchController.obscuresBackgroundDuringPresentation = false
         
         if #available(iOS 11.0, *) {
             // UISearchControllerをUINavigationItemのsearchControllerプロパティにセットする
             navItem.searchController = searchController
+            navItem.hidesSearchBarWhenScrolling = false
+            
             print("DEBUG: iOS >= 11.0")
         } else {
             tableView.tableHeaderView = searchController.searchBar
