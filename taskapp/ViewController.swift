@@ -10,17 +10,22 @@ import UIKit
 import RealmSwift
 import UserNotifications
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPickerViewDelegate, UIPickerViewDataSource {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var navItem: UINavigationItem!
+    @IBOutlet weak var categoryTextField: UITextField!
+    @IBAction func catchEditingChangedEvent(_ sender: Any) {
+        categoryTextField.text = "かわったお"
+    }
     
-    private var searchController: UISearchController!
     
     private var filteredTasks: Results<Task>!
+    private var pickerView = UIPickerView()
     
     //Realmインスタンスを取得する
-    let realm = try! Realm()
-    
+    var realm = try! Realm()
+    var categoryList = try! Realm().objects(Category.self)
+
     //DB内のタスクが格納されるリスト
     //日付近い順でソート：降順
     //以降内容をアップデートするとリスト内は自動的に更新される
@@ -29,6 +34,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        
+        
         
         setup()
     }
@@ -47,9 +55,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: UITableViewDataSourceプロトコルのメソッド
     // データの数(=セルの数)を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section:Int) -> Int {
-        if searchController.isActive {
+        if !categoryTextField.text!.isEmpty {
             return filteredTasks.count
-        } else { //
+        } else {
             return taskArray.count
         }
     }
@@ -60,9 +68,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
         //Cellに値を設定する
-        let task = searchController.isActive ? filteredTasks[indexPath.row] : taskArray[indexPath.row]
+        let task = !categoryTextField.text!.isEmpty ? filteredTasks[indexPath.row] : taskArray[indexPath.row]
         if task.category?.name != "" {
-            cell.textLabel?.text = "[\(task.category!.name)]\(task.title)"
+            cell.textLabel?.text = "[\(task.category!.name)\(task.category!.id)]\(task.title)"
         } else {
             cell.textLabel?.text = "[カテゴリ未分類]\(task.title)"
         }
@@ -90,9 +98,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // Deleteボタンが押されたときに呼ばれるメソッド
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            
             //削除されたタスクを取得する
-            let task = searchController.isActive ? filteredTasks[indexPath.row] : taskArray[indexPath.row]
+            let task = !categoryTextField.text!.isEmpty ? filteredTasks[indexPath.row] : taskArray[indexPath.row]
             
             //ローカル通知をキャンセルする
             let center = UNUserNotificationCenter.current()
@@ -122,7 +129,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         if segue.identifier == "cellSegue" {
             let indexPath = self.tableView.indexPathForSelectedRow
-            inputViewController.task = searchController.isActive ? filteredTasks[indexPath!.row] : taskArray[indexPath!.row]
+            inputViewController.task = !categoryTextField.text!.isEmpty ? filteredTasks[indexPath!.row] : taskArray[indexPath!.row]
+            print("DEBG: \(inputViewController.task.category)")
         } else {
             let task = Task()
             task.date = Date()
@@ -136,33 +144,52 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    func updateSearchResults(for searchController: UISearchController) {
-        // searchbarに入力したテキストを使って表示データをフィルタリングする
-        let text = searchController.searchBar.text ?? ""
-        if text.isEmpty { //サーチバーが空文字の場合、
+    @objc func done() {
+        categoryTextField.endEditing(true)
+    }
+    
+    @objc func cancel() {
+        categoryTextField.text = ""
+        categoryTextField.endEditing(true)
+        tableView.reloadData()
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return categoryList.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        print("DEBUG:\(categoryList[row])")
+        return categoryList[row].name
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        categoryTextField.text = categoryList[row].name
+        
+        if categoryTextField.text!.isEmpty { //サーチバーが空文字の場合、
             filteredTasks = taskArray
         } else {
-            filteredTasks = taskArray.filter("category.name contains %@", text)
+            filteredTasks = taskArray.filter("category.name contains %@", categoryTextField.text)
         }
         tableView.reloadData()
     }
     
     func setup() {
-        searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        searchController.hidesNavigationBarDuringPresentation = false
-        searchController.obscuresBackgroundDuringPresentation = false
+        pickerView.delegate = self
+        pickerView.dataSource = self
         
-        if #available(iOS 11.0, *) {
-            // UISearchControllerをUINavigationItemのsearchControllerプロパティにセットする
-            navItem.searchController = searchController
-            navItem.hidesSearchBarWhenScrolling = false
-            
-            print("DEBUG: iOS >= 11.0")
-        } else {
-            tableView.tableHeaderView = searchController.searchBar
-            print("DEBUG: iOS < 11.0")
-        }
+        let toolbar = UIToolbar(frame: CGRect(x:0, y:0, width:0, height:35))
+        let doneItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.done))
+        let cancelItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(self.cancel))
+        toolbar.setItems([cancelItem, doneItem], animated: true)
+        
+        categoryTextField.frame.size.width = 10000
+        categoryTextField.inputView = pickerView
+        categoryTextField.inputAccessoryView = toolbar
         
         tableView.delegate = self
         tableView.dataSource = self

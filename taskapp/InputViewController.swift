@@ -22,6 +22,7 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     var categoryList = try! Realm().objects(Category.self)
     let realm = try! Realm()
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -30,8 +31,11 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
         self.view.addGestureRecognizer(tapGesture)
         
         //もしカテゴリ値が設定されていたらそれを初期値としてセット
-        if task.category?.id != nil {
-            categoryPicker.selectRow(task.category!.id, inComponent: 0, animated: true)
+        if let category_id = task.category?.id {
+            print("DEBUG: このタスクのカテゴリID: \(category_id)")
+            categoryPicker.selectRow(category_id, inComponent: 0, animated: true)
+        } else {
+            print("DEBUG: このタスクのカテゴリID = nil")
         }
         
         titleTextField.text = task.title
@@ -78,7 +82,6 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        print("DEBUG:\(categoryList[row])")
         return categoryList[row].name
     }
     
