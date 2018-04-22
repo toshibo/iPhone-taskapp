@@ -25,7 +25,9 @@ class InputViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        categoryPicker.dataSource = self
+        categoryPicker.delegate = self
         // 背景をタップしたらdismissKeyboardメソッドを呼ぶように設定する
         let tapGesture:UITapGestureRecognizer = UITapGestureRecognizer(target:self, action:#selector(dismissKeyboard))
         self.view.addGestureRecognizer(tapGesture)
